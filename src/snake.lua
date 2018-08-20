@@ -12,6 +12,7 @@ function Snake:init()
     -- Set starting move directions
     self.m_deltaX = 0
     self.m_deltaY = 1
+    self.m_turned = false
 end
 
 function Snake:render()
@@ -21,8 +22,10 @@ function Snake:render()
 end
 
 function Snake:update(dt)
-    Snake:turn(self, dt)
-    Snake:eatFood(self, dt)
+    if (MOVE_COUNTDOWN ~= 0) then
+        Snake:turn(self, dt)
+        Snake:eatFood(self, dt)
+    end
 
     if (Snake:crash(self)) then GAME_OVER = true end
 
@@ -30,14 +33,19 @@ function Snake:update(dt)
         Snake:move(self, dt)
         -- reset move timer
         MOVE_COUNTDOWN = 50
+        self.m_turned = false
     else MOVE_COUNTDOWN = math.max(0, MOVE_COUNTDOWN - 100 * dt) end
 end
 
 function Snake:turn(self, dt)
-    if (love.keyboard.wasPressed("up")) and (self.m_deltaY ~= 1) then self.m_deltaX, self.m_deltaY = 0, -1
-    elseif (love.keyboard.wasPressed("down")) and (self.m_deltaY ~= -1) then self.m_deltaX, self.m_deltaY = 0, 1 end
-    if (love.keyboard.wasPressed("right")) and (self.m_deltaX ~= -1) then self.m_deltaX, self.m_deltaY = 1, 0
-    elseif (love.keyboard.wasPressed("left")) and (self.m_deltaX ~= 1) then self.m_deltaX, self.m_deltaY = -1, 0 end
+    if (not self.m_turned) then
+        if (love.keyboard.wasPressed("up")) and (self.m_deltaY ~= 1) then self.m_deltaX, self.m_deltaY, self.m_turned = 0, -1, true
+        else if (love.keyboard.wasPressed("down")) and (self.m_deltaY ~= -1) then self.m_deltaX, self.m_deltaY, self.m_turned = 0, 1, true
+            else if (love.keyboard.wasPressed("right")) and (self.m_deltaX ~= -1) then self.m_deltaX, self.m_deltaY, self.m_turned = 1, 0, true
+                elseif (love.keyboard.wasPressed("left")) and (self.m_deltaX ~= 1) then self.m_deltaX, self.m_deltaY, self.m_turned = -1, 0, true end
+            end
+        end
+    end
 end
 
 function Snake:move(self, dt)
